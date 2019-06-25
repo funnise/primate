@@ -11,37 +11,35 @@
     <!-- initialize the SDK after all desired features are loaded -->
     <script defer src="/__/firebase/init.js"></script>
     <script src="https://d.line-scdn.net/liff/1.0/sdk.js"></script>
+    <link rel="stylesheet" href='./css/index.css'>
   </head>
   <body>
-  下記のフォームからアイテムを選択してください。(表示時にapiも叩く)
-  <form name="line">
+  <h1>下記のボタンから受講したいパンの種類を選択してください</h1>
     <ul class="SelectPane">
-      <li><button onClick="initClient()" >菓子パン</button></li>
-      <li><button>ロールパン</button></li>
-      <li><button>食パン</button></li>
-      <li><button>調理パン</button></li>
-      <li><button>デニッシュ</button></li>
-      <li><button>ハードパン</button></li>
-      <li><button>自家製酵母</button></li>
-      <li><button>限定パン</button></li>
+      <li><button onClick="makeApiCall('菓子パン')" >菓子パン</button></li>
+      <li><button onClick="makeApiCall('菓子パン')">ロールパン</button></li>
+      <li><button onClick="makeApiCall('食パン')">食パン</button></li>
+      <li><button onClick="makeApiCall('調理パン')" >調理パン</button></li>
+      <li><button onClick="makeApiCall('デニッシュ')">デニッシュ</button></li>
+      <li><button onClick="makeApiCall('ハードパン')">ハードパン</button></li>
+      <li><button onClick="makeApiCall('自家製酵母')">自家製酵母</button></li>
+      <li><button onClick="makeApiCall('限定')">限定パン</button></li>
     </ul>
-    <input name="lineid" value="" placeholder="id"><br>
-    <select name="item_1"> <option value="なし">（アイテム1）</option></select><br>
-    <select name="item_2"><option value="なし">（アイテム2）</option> </select><br>
-    <div class="col-lg-12" id="list-puntate">
-        <!-- Insert my list here -->                              
-    </div>
-  </form>
+    <form> 
+    <button onClick="sendMessage()">クリア</button><br>
     <button onClick="sendMessage()">Close&Message</button><br>
+   <div class="col-lg-12" id="list">
+        <!-- Insert my list here -->                              
+   </div>
+   </form>
     <script>
        var userId='';
        function handleClientLoad() {
         gapi.load('client:auth2', initClient);
       }
-
       function initClient() {
-        CLIENT_ID='**.com';
-        API_KEY = '**';
+        CLIENT_ID='332564403679-5jshho40tjef60urah5i2jvsjrut0mr8.apps.googleusercontent.com';
+        API_KEY = 'AIzaSyA658oFt4iGLxUz3fcQTwr1-bVLFKi1QI8';
         var SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
         gapi.client.init({
           'apiKey': API_KEY,
@@ -49,7 +47,7 @@
           'scope': SCOPE,
           'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
        }).then(function() {
-        makeApiCall('菓子パン')
+
       });
     }
      function makeApiCall(genre){
@@ -60,12 +58,14 @@
           var request = gapi.client.sheets.spreadsheets.values.get(params);
           var reulst = request.then(function(response) {
           var resultSet = response.result.values;
-          document.line.item_1.length = resultSet.length;
-          var listDiv = document.getElementById('list-puntate');
-          var div=document.createElement('div');
         for (var i=1;i<resultSet.length;i++) {
+          var listDiv = document.getElementById('list');
+        
           if(resultSet[i][3]==='TRUE'&&resultSet[i][5]===genre){
-          var div2=document.createElement('div');
+             var parent=document.createElement('div');
+             parent.className = 'parent';
+             var child=document.createElement('div');
+              child.className = 'child'
               var Img=document.createElement('div')
               var p=document.createElement('p');
               var p2=document.createElement('p');
@@ -76,23 +76,19 @@
               p2.innerHTML ='説明: '+  resultSet[i][2]
               p3.innerHTML ='アイテム番号: '+  i
               button.innerHTML='このアイテムを選択する'
-               div2.appendChild(Img)
-               div2.appendChild(p);  
-               div2.appendChild(p2); 
-               div2.appendChild(p3); 
-               div2.appendChild(button); 
-               div.append(div2)
+              child.appendChild(Img)
+              child.appendChild(p);  
+              child.appendChild(p2); 
+              child.appendChild(p3); 
+              child.appendChild(button); 
+              parent.append(child)
+              listDiv.appendChild(parent);
               }
              }
-          listDiv.appendChild(div);
         }, function(reason) {
           console.error('error: ' + reason.result.error.message);
         })
       }
-      function test(){
-        window.alert('test')
-      }
-    
       function sendMessage(){
         liff.sendMessages([
           { type:'text',
@@ -105,7 +101,6 @@
         .catch((err) => {
           console.log('error', err); });
       }
-     
       </script>
       <script src="https://apis.google.com/js/api.js"
         onload="this.onload=function(){};handleClientLoad();"

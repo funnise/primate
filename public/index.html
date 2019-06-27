@@ -14,27 +14,38 @@
     <link rel="stylesheet" href='./css/index.css'>
   </head>
   <body>
-  <h1>下記のボタンから受講したいパンの種類を選択してください</h1>
-    <ul class="SelectPane">
-      <li><button onClick="makeApiCall('菓子パン')" >菓子パン</button></li>
-      <li><button onClick="makeApiCall('菓子パン')">ロールパン</button></li>
-      <li><button onClick="makeApiCall('食パン')">食パン</button></li>
-      <li><button onClick="makeApiCall('調理パン')" >調理パン</button></li>
-      <li><button onClick="makeApiCall('デニッシュ')">デニッシュ</button></li>
-      <li><button onClick="makeApiCall('ハードパン')">ハードパン</button></li>
-      <li><button onClick="makeApiCall('自家製酵母')">自家製酵母</button></li>
-      <li><button onClick="makeApiCall('限定')">限定パン</button></li>
-    </ul>
-    <form> 
-    <button onClick="sendMessage()">クリア</button><br>
-    <button onClick="sendMessage()">Close&Message</button><br>
-   <div class="col-lg-12" id="list">
-        <!-- Insert my list here -->                              
-   </div>
-   </form>
+      <div class="selectItem">
+          <h2>選択中のitem</2>
+           <p id="item01">アイテム番号が選択されていません</p>
+           <p id="item02">アイテム番号が選択されていません</p>
+           <button class="delete" onClick="sessionStorageClear()" >選び直す</button>
+           <button class="reserv" onClick="reserv()" >予約する</button>
+        </div>
+    <h1>下記のボタンから受講したいパンの種類を選択してください</h1>
+    <div class="SelectPane"> 
+      <select id="selector"  onchange="makeApiCall()">
+        <option>菓子パン</option>
+        <option>ロールパン</option>
+        <option>食パン</option>
+        <option>調理パン</option>
+        <option>デニッシュ</option>
+        <option>ハードパン</option>
+        <option>自家製酵母</option>
+        <option>限定パン</option>  
+     </select>
+  </div>
+   <div class ="clear">
+    <button   onClick="reload()">クリア</button>
+  </div>
+ 
+    <div class="col-lg-12" id="list">
+         <!-- Insert my list here -->                              
+    </div>
+    
+
     <script>
        var userId='';
-       function handleClientLoad() {
+     function handleClientLoad() {
         gapi.load('client:auth2', initClient);
       }
       function initClient() {
@@ -47,10 +58,59 @@
           'scope': SCOPE,
           'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
        }).then(function() {
-
+         callStorage()
       });
     }
-     function makeApiCall(genre){
+     
+      function sessionStorageClear(){
+        const storage = sessionStorage;
+        sessionStorage.clear()
+        location.reload();
+       }
+      function reserv(){
+        const storage = sessionStorage;
+      if(sessionStorage.length<4){
+         window.alert('アイテムを選択してください')
+         return
+        }
+        //gas call
+        const item01 = sessionStorage.getItem('1')
+        const item02 = sessionStorage.getItem('2')
+        const userId = sessionStorage.getItem('userId')
+        window.alert(sessionStorage.getItem('userId'))
+        //OKならliffを閉じる
+
+     }
+    function register(value){
+                var count=0
+                const storage = sessionStorage;
+                for (let i= 0; i < sessionStorage.length; i++) {
+                    if(sessionStorage.key(i)=='1'){
+                      count = Number(sessionStorage.key(i)) + 1
+                      break
+                    }else{
+                      count = 1
+                    }}
+                storage.setItem(count,value)
+                window.alert(value+'を選択しました')
+                location.reload();
+              }
+    function callStorage(){
+          const storage = sessionStorage;
+          for (let i= 0; i < sessionStorage.length; i++) {
+                if(sessionStorage.key(i)=='1'){
+                  const key01 = sessionStorage.key(i)
+                  const item01=sessionStorage.getItem(key01)
+                  document.getElementById('item01').innerHTML=item01
+              }else if(sessionStorage.key(i)=='2'){
+                      const key02 = sessionStorage.key(i)
+                      const item02=sessionStorage.getItem(key02)
+                      document.getElementById('item02').innerHTML=item02
+               }else {}
+                    }       
+    }
+     function makeApiCall(){
+      const genre = document.getElementById("selector").value;
         var params = {
           spreadsheetId:'1LTatslyO6tuU8DEJmvBhxtbHGNtfP-pz4LLar40UVXE',  
           range: 'アイテムリスト!A1:G100',
@@ -60,7 +120,6 @@
           var resultSet = response.result.values;
         for (var i=1;i<resultSet.length;i++) {
           var listDiv = document.getElementById('list');
-        
           if(resultSet[i][3]==='TRUE'&&resultSet[i][5]===genre){
              var parent=document.createElement('div');
              parent.className = 'parent';
@@ -70,11 +129,16 @@
               var p=document.createElement('p');
               var p2=document.createElement('p');
               var p3=document.createElement('p');
-              var button = document.createElement('button')
               Img.innerHTML=`<img src=${resultSet[i][4]}>`
               p.innerHTML ='アイテム名: '+ resultSet[i][1]   // Use innerHTML to set the text
               p2.innerHTML ='説明: '+  resultSet[i][2]
               p3.innerHTML ='アイテム番号: '+  i
+              let button = document.createElement('button')
+              button.id='itemNumber';
+              button.value=i;
+              button.onclick=function(){
+                register(button.value)
+              }
               button.innerHTML='このアイテムを選択する'
               child.appendChild(Img)
               child.appendChild(p);  
@@ -89,6 +153,10 @@
           console.error('error: ' + reason.result.error.message);
         })
       }
+      function reload(){
+        location.reload();
+      }
+
       function sendMessage(){
         liff.sendMessages([
           { type:'text',
@@ -114,7 +182,9 @@
           liff.init(
             data => {
               // Now you can call LIFF API
+              const storage = sessionStorage;
               userId = data.context.userId;
+              storage.setItem('userId',userId)
               document['line']['lineid']['value']=userId;//LINE IDの格納NG
             },
             err => {}

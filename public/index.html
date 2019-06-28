@@ -61,24 +61,37 @@
          callStorage()
       });
     }
-     
+
       function sessionStorageClear(){
         const storage = sessionStorage;
-        sessionStorage.clear()
+        sessionStorage.clear();
         location.reload();
        }
       function reserv(){
         const storage = sessionStorage;
       if(sessionStorage.length<4){
-         window.alert('アイテムを選択してください')
-         return
+         window.alert('アイテムを選択してください');
+         return;
         }
         //gas call
-        const item01 = sessionStorage.getItem('1')
-        const item02 = sessionStorage.getItem('2')
-        const userId = sessionStorage.getItem('userId')
-        window.alert(sessionStorage.getItem('userId'))
+        const item01 = sessionStorage.getItem('1');
+        const item02 = sessionStorage.getItem('2');
+        const userId = sessionStorage.getItem('userId');
+        //window.alert(sessionStorage.getItem('userId'))//ここのコメントアウト伊藤
         //OKならliffを閉じる
+
+        // ここから伊藤
+        liff.sendMessages([{
+          'type': "text",
+          "text": "希望アイテム\n①"+item01+"\n②"+item02
+        }]).then((res) => {
+          //if(res==""){liff.closeWindow();　}else{ //エラーページにリダイレクトor window.alert()でリトライをおねいがいする}
+          liff.closeWindow();
+        }).catch((err)=>{
+          //エラーハンドリングどうしよう
+          liff.closeWindow();
+        });        
+        //ここまで伊藤
 
      }
     function register(value){
@@ -189,11 +202,9 @@
             },
             err => {}
           );
+
         } catch (e) { console.error(e);}
       });
     </script>
   </body>
 </html>
-
-
-

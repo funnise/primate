@@ -24,6 +24,7 @@
     <h1>下記のボタンから受講したいパンの種類を選択してください</h1>
     <div class="SelectPane"> 
       <select id="selector"  onchange="makeApiCall()">
+        <option>パンのカテゴリーを選択</option>
         <option>菓子パン</option>
         <option>ロールパン</option>
         <option>食パン</option>
@@ -37,11 +38,9 @@
    <div class ="clear">
     <button   onClick="reload()">クリア</button>
   </div>
- 
     <div class="col-lg-12" id="list">
          <!-- Insert my list here -->                              
-    </div>
-    
+   </div>
 
     <script>
        var userId='';
@@ -49,8 +48,8 @@
         gapi.load('client:auth2', initClient);
       }
       function initClient() {
-        CLIENT_ID='*';
-        API_KEY = '*';
+        CLIENT_ID='332564403679-5jshho40tjef60urah5i2jvsjrut0mr8.apps.googleusercontent.com';
+        API_KEY = 'AIzaSyA658oFt4iGLxUz3fcQTwr1-bVLFKi1QI8';
         var SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
         gapi.client.init({
           'apiKey': API_KEY,
@@ -61,24 +60,36 @@
          callStorage()
       });
     }
-     
       function sessionStorageClear(){
         const storage = sessionStorage;
-        sessionStorage.clear()
+        sessionStorage.clear();
         location.reload();
        }
       function reserv(){
         const storage = sessionStorage;
       if(sessionStorage.length<4){
-         window.alert('アイテムを選択してください')
-         return
+         window.alert('アイテムを選択してください');
+         return;
         }
         //gas call
-        const item01 = sessionStorage.getItem('1')
-        const item02 = sessionStorage.getItem('2')
-        const userId = sessionStorage.getItem('userId')
-        window.alert(sessionStorage.getItem('userId'))
+        const item01 = sessionStorage.getItem('1');
+        const item02 = sessionStorage.getItem('2');
+        const userId = sessionStorage.getItem('userId');
+        //window.alert(sessionStorage.getItem('userId'))//ここのコメントアウト伊藤
         //OKならliffを閉じる
+        // ここから伊藤
+        const resvCode = location.search.substring(1).split('=')[1];
+        liff.sendMessages([{
+          'type': "text",
+          "text": "希望アイテム\n①:"+item01+"\n②:"+item02+"\n予約コード:"+resvCode
+        }]).then((res) => {
+          //if(res==""){liff.closeWindow();　}else{ //エラーページにリダイレクトor window.alert()でリトライをおねいがいする}
+          liff.closeWindow();
+        }).catch((err)=>{
+          //エラーハンドリングどうしよう
+          liff.closeWindow();
+        });        
+        //ここまで伊藤
 
      }
     function register(value){
@@ -106,7 +117,7 @@
                       const key02 = sessionStorage.key(i)
                       const item02=sessionStorage.getItem(key02)
                       document.getElementById('item02').innerHTML=item02
-               }else {}
+              }else {}
                     }       
     }
      function makeApiCall(){
@@ -115,11 +126,15 @@
           spreadsheetId:'1LTatslyO6tuU8DEJmvBhxtbHGNtfP-pz4LLar40UVXE',  
           range: 'アイテムリスト!A1:G100',
         };
+           
           var request = gapi.client.sheets.spreadsheets.values.get(params);
           var reulst = request.then(function(response) {
           var resultSet = response.result.values;
-        for (var i=1;i<resultSet.length;i++) {
           var listDiv = document.getElementById('list');
+          while (listDiv.firstChild) listDiv.removeChild(listDiv.firstChild);
+          var rootDiv=document.createElement('div');
+          rootDiv.className='rootParent'
+        for (var i=1;i<resultSet.length;i++) {
           if(resultSet[i][3]==='TRUE'&&resultSet[i][5]===genre){
              var parent=document.createElement('div');
              parent.className = 'parent';
@@ -146,9 +161,10 @@
               child.appendChild(p3); 
               child.appendChild(button); 
               parent.append(child)
-              listDiv.appendChild(parent);
+              rootDiv.appendChild(parent);
               }
              }
+             listDiv.appendChild(rootDiv)
         }, function(reason) {
           console.error('error: ' + reason.result.error.message);
         })
@@ -157,18 +173,7 @@
         location.reload();
       }
 
-      function sendMessage(){
-        liff.sendMessages([
-          { type:'text',
-            text:'My LINE_ID is '+userId+'\n'+'SELECTED Item is'+document['line']['item_1'] }
-        ])
-        .then(() => {
-          console.log('message sent');
-          liff.closeWindow();
-        })
-        .catch((err) => {
-          console.log('error', err); });
-      }
+
       </script>
       <script src="https://apis.google.com/js/api.js"
         onload="this.onload=function(){};handleClientLoad();"
@@ -189,11 +194,9 @@
             },
             err => {}
           );
+
         } catch (e) { console.error(e);}
       });
     </script>
   </body>
 </html>
-
-
-

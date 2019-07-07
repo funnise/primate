@@ -60,6 +60,7 @@
          callStorage()
       });
     }
+
       function sessionStorageClear(){
         const storage = sessionStorage;
         sessionStorage.clear();
@@ -82,6 +83,19 @@
         liff.sendMessages([{
           'type': "text",
           "text": "希望アイテム\n①:"+item01+"\n②:"+item02+"\n予約コード:"+resvCode
+        }]).then((res) => {
+          //if(res==""){liff.closeWindow();　}else{ //エラーページにリダイレクトor window.alert()でリトライをおねいがいする}
+          liff.closeWindow();
+        }).catch((err)=>{
+          //エラーハンドリングどうしよう
+          liff.closeWindow();
+        });        
+        //ここまで伊藤
+
+        // ここから伊藤
+        liff.sendMessages([{
+          'type': "text",
+          "text": "希望アイテム\n①"+item01+"\n②"+item02
         }]).then((res) => {
           //if(res==""){liff.closeWindow();　}else{ //エラーページにリダイレクトor window.alert()でリトライをおねいがいする}
           liff.closeWindow();
